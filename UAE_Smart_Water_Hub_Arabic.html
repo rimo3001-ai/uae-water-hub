@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مركز الإمارات الذكي لتعلم إدارة المياه</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; direction: rtl; }
+  :root {
+    --blue: #1a6fb5; --blue-light: #e6f4ff; --blue-mid: #378ADD;
+    --green: #2d8a4e; --green-light: #eaf7ee; --green-mid: #3d9c5f;
+    --teal: #0f8c7a; --white: #fff;
+    --bg: #f0f4f8; --card-bg: #fff; --text: #1a1a1a; --muted: #666; --border: rgba(0,0,0,0.12);
+  }
+  body { background: var(--bg); min-height: 100vh; }
+  #app { max-width: 480px; margin: 0 auto; background: var(--bg); min-height: 100vh; }
+  .page { display: none; padding: 16px; }
+  .page.active { display: block; }
+  .gradient-header {
+    background: linear-gradient(135deg, #0a4f8c 0%, #1a7a5e 50%, #2d8a4e 100%);
+    padding: 20px 16px 16px; color: white; border-radius: 0 0 20px 20px; margin-bottom: 16px;
+  }
+  .avatar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-direction: row-reverse; text-align: right; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid rgba(255,255,255,0.5); flex-shrink: 0; }
+  .welcome-name { font-size: 15px; font-weight: 600; }
+  .welcome-text { font-size: 12px; opacity: 0.85; }
+  .quote-box { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 12px; margin-top: 10px; font-size: 12px; border-right: 3px solid rgba(255,255,255,0.7); text-align: right; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .smart-card { background: var(--card-bg); border: 0.5px solid var(--border); border-radius: 14px; padding: 14px 12px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+  .smart-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,100,200,0.12); }
+  .smart-card:active { transform: scale(0.97); }
+  .card-icon { font-size: 26px; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+  .card-icon.blue { background: var(--blue-light); }
+  .card-icon.green { background: var(--green-light); }
+  .card-icon.teal { background: #e0f5f2; }
+  .card-icon.amber { background: #fff8e1; }
+  .card-icon.purple { background: #f0ecfe; }
+  .card-icon.coral { background: #fef0ea; }
+  .card-title { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.4; }
+  .card-sub { font-size: 10px; color: var(--muted); }
+  .nav-bar { padding: 10px 0; display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+  .btn { padding: 9px 18px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); transition: all 0.15s; font-family: inherit; font-weight: 500; }
+  .btn:hover { background: var(--blue-light); color: var(--blue); border-color: var(--blue-mid); }
+  .btn.primary { background: linear-gradient(135deg, #1a6fb5, #2d8a4e); color: white; border: none; }
+  .btn.primary:hover { opacity: 0.9; }
+  .btn.danger { background: #fee; color: #b33; border-color: #fcc; }
+  .section-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+  .info-card { background: var(--card-bg); border: 0.5px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; text-align: right; }
+  .info-card h3 { font-size: 13px; font-weight: 600; color: var(--blue); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
+  .info-card p { font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .tag { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; margin: 2px; }
+  .tag.blue { background: var(--blue-light); color: var(--blue); }
+  .tag.green { background: var(--green-light); color: var(--green); }
+  .tag.teal { background: #e0f5f2; color: var(--teal); }
+  .tag.amber { background: #fff8e1; color: #b06a00; }
+  input[type=text], input[type=password], textarea, select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text); background: var(--card-bg); margin-bottom: 10px; font-family: inherit; direction: rtl; text-align: right; }
+  input:focus, textarea:focus { outline: 2px solid var(--blue-mid); border-color: var(--blue-mid); }
+  .progress-bar-wrap { background: #dce8f5; border-radius: 99px; height: 8px; margin-bottom: 4px; }
+  .progress-bar-fill { height: 8px; border-radius: 99px; background: linear-gradient(90deg, #2d8a4e, #1a6fb5); transition: width 0.5s ease; }
+  .xp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg,#fff8e1,#ffeaa7); border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #b06a00; border: 1px solid #f0c040; }
+  .question-card { background: var(--card-bg); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 12px; text-align: right; }
+  .q-type { font-size: 10px; font-weight: 600; color: var(--muted); margin-bottom: 8px; background: var(--bg); display: inline-block; padding: 2px 8px; border-radius: 20px; }
+  .q-text { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 14px; line-height: 1.6; }
+  .option-btn { width: 100%; text-align: right; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); font-size: 13px; color: var(--text); cursor: pointer; margin-bottom: 7px; transition: all 0.15s; display: block; font-family: inherit; direction: rtl; }
+  .option-btn:hover { background: var(--blue-light); border-color: var(--blue-mid); color: var(--blue); }
+  .option-btn.selected { background: var(--blue-light); border-color: var(--blue); color: var(--blue); font-weight: 600; }
+  .option-btn.correct { background: var(--green-light); border-color: var(--green); color: var(--green); font-weight: 600; }
+  .option-btn.wrong { background: #fff0f0; border-color: #e24b4a; color: #a32d2d; }
+  .feedback-box { border-radius: 10px; padding: 10px 14px; font-size: 13px; font-weight: 600; margin-top: 10px; text-align: center; }
+  .feedback-box.correct { background: var(--green-light); color: #1a6e35; border: 1px solid #c0dd97; }
+  .feedback-box.wrong { background: #fff0f0; color: #a32d2d; border: 1px solid #f09595; }
+  .table-wrap { overflow-x: auto; margin-top: 10px; border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; direction: rtl; min-width: 400px; }
+  th { background: linear-gradient(135deg,#0a4f8c,#1a7a5e); color: white; padding: 10px; text-align: right; font-weight: 600; font-family: inherit; }
+  td { padding: 9px 10px; border-bottom: 0.5px solid var(--border); color: var(--text); text-align: right; }
+  tr:hover td { background: var(--blue-light); }
+  .level-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .level-badge.outstanding { background: #eaf7ee; color: #1a6e35; }
+  .level-badge.good { background: var(--blue-light); color: var(--blue); }
+  .level-badge.developing { background: #fff8e1; color: #b06a00; }
+  .chat-area { max-height: 280px; overflow-y: auto; padding: 10px; background: var(--bg); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; }
+  .chat-msg { margin-bottom: 12px; }
+  .chat-msg .bubble { display: inline-block; padding: 9px 13px; border-radius: 12px; font-size: 12px; max-width: 85%; line-height: 1.6; text-align: right; }
+  .chat-msg.student { text-align: left; }
+  .chat-msg.student .bubble { background: linear-gradient(135deg,#1a6fb5,#2d8a4e); color: white; border-radius: 2px 12px 12px 12px; }
+  .chat-msg.teacher { text-align: right; }
+  .chat-msg.teacher .bubble { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); border-radius: 12px 2px 12px 12px; }
+  .avatar-sm { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; background: var(--green-light); border: 1.5px solid var(--green-mid); vertical-align: middle; margin-left: 5px; }
+  .innovate-card { background: linear-gradient(135deg,#0a4f8c 0%,#1a7a5e 100%); border-radius: 14px; padding: 16px; color: white; margin-bottom: 10px; cursor: pointer; text-align: right; transition: opacity 0.15s, transform 0.15s; }
+  .innovate-card:hover { opacity: 0.9; transform: translateY(-1px); }
+  .innovate-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+  .innovate-card p { font-size: 12px; opacity: 0.85; }
+  textarea { resize: vertical; min-height: 90px; }
+  .pw-hint { font-size: 11px; color: var(--muted); margin-top: -6px; margin-bottom: 10px; text-align: right; }
+  .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .analytics-card { background: var(--card-bg); border-radius: 12px; padding: 14px; text-align: center; border: 0.5px solid var(--border); }
+  .analytics-num { font-size: 28px; font-weight: 700; color: var(--blue); }
+  .analytics-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .skill-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-direction: row-reverse; }
+  .skill-label { font-size: 12px; color: var(--muted); width: 110px; text-align: right; }
+  .skill-bar { flex: 1; margin: 0 10px; }
+  .avatar-opt { font-size: 26px; cursor: pointer; padding: 7px; border-radius: 10px; border: 2px solid transparent; transition: all 0.15s; display: inline-block; }
+  .avatar-opt:hover { border-color: var(--blue-mid); background: var(--blue-light); }
+  .avatar-opt.selected { border-color: var(--blue); background: var(--blue-light); }
+  .done-section { text-align: center; padding: 30px 16px; }
+  .watermark { text-align: center; padding: 20px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 10px; }
+  @media (max-width: 400px) { .grid-2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- الصفحة الرئيسية -->
+<div id="page-home" class="page active">
+  <div class="gradient-header">
+    <div class="avatar-row">
+      <div class="avatar">🧑‍🎓</div>
+      <div style="text-align:right;">
+        <div class="welcome-name">أهلاً بك، قائد الاستدامة المستقبلي!</div>
+        <div class="welcome-text">مركز الإمارات الذكي لتعلم إدارة المياه</div>
+      </div>
+    </div>
+    <div style="font-size:10px;opacity:0.75;margin-bottom:6px;text-align:right;">إعداد وتصميم المعلمة ريهام سامي</div>
+    <div class="quote-box">💧 "المياه هي ثروة الأمم في المستقبل"</div>
+  </div>
+  <div class="section-title"><span>🏠</span> لوحة التحكم الرئيسية</div>
+  <div class="grid-2">
+    <div class="smart-card" onclick="goto('challenge')"><div class="card-icon blue">🧑‍🎓</div><div class="card-title">ابدأ التحدي الذكي</div><div class="card-sub">15 سؤالاً تكيفياً</div></div>
+    <div class="smart-card" onclick="goto('progress')"><div class="card-icon green">📊</div><div class="card-title">تقدمي</div><div class="card-sub">المهارات والإنجازات</div></div>
+    <div class="smart-card" onclick="goto('teacher')"><div class="card-icon amber">👨‍🏫</div><div class="card-title">مركز تحكم المعلم</div><div class="card-sub">لوحة المعلم الآمنة</div></div>
+    <div class="smart-card" onclick="goto('innovation')"><div class="card-icon teal">🚀</div><div class="card-title">مختبر الابتكار</div><div class="card-sub">صمم حلك الخاص</div></div>
+    <div class="smart-card" onclick="goto('ask')"><div class="card-icon purple">💬</div><div class="card-title">اسأل المعلمة ريهام</div><div class="card-sub">مكتب المساعدة الذكي</div></div>
+    <div class="smart-card" onclick="goto('summary')"><div class="card-icon coral">📚</div><div class="card-title">ملخص الدرس الذكي</div><div class="card-sub">نظرة عامة مرئية</div></div>
+  </div>
+  <div class="watermark">🇦🇪 UAE Smart Water Learning Hub | إعداد: المعلمة ريهام سامي</div>
+</div>
+
+<!-- صفحة الملخص -->
+<div id="page-summary" class="page">
+  <div class="gradient-header">
+    <div class="avatar-row">
+      <div class="avatar">📚</div>
+      <div style="text-align:right;"><div class="welcome-name">ملخص الدرس الذكي</div><div class="welcome-text">إدارة المياه في المناطق الحضرية بالإمارات</div></div>
+    </div>
+  </div>
+  <div class="info-card"><h3>💧 مفهوم إدارة المياه الحضرية</h3><p>تتضمن إدارة المياه الحضرية ضمان توفير إمدادات مياه موثوقة وآمنة وبأسعار معقولة لسكان المدن. معظم المدن الآسيوية لديها معدلات وصول أعلى للمياه مقارنةً بالمناطق الريفية، غير أن خدمة فقراء المناطق الحضرية لا تزال تحدياً جوهرياً.</p><div style="margin-top:8px;"><span class="tag blue">الإمداد</span><span class="tag green">التوزيع</span><span class="tag teal">الوصول</span></div></div>
+  <div class="info-card"><h3>⚠️ تحديات المياه — المجالات الخمسة</h3><p>تُصنَّف تحديات المياه في خمسة مجالات رئيسية: توافر الموارد، والوصول إلى المياه، والقدرات المالية، وجودة المياه، وكفاءة الاستخدام — ويرتبط كل منها بمؤشر كفاية المياه.</p><div style="margin-top:8px;"><span class="tag amber">التوافر</span><span class="tag blue">الوصول</span><span class="tag green">القدرة</span><span class="tag teal">الجودة</span><span class="tag blue">الاستخدام</span></div></div>
+  <div class="info-card"><h3>🏗️ تحلية المياه</h3><p>تعتمد الإمارات اعتماداً كبيراً على تحلية المياه. أنشأت سنغافورة أول محطة تحلية عام 2005 وفق نموذج البناء والتملك والتشغيل لمدة 20 عاماً، وتلبي 10% من احتياجات المياه الوطنية، وتمت إضافة محطة ثانية عام 2013.</p></div>
+  <div class="info-card"><h3>♻️ إعادة تدوير المياه (NEWater)</h3><p>مياه NEWater هي مياه معالجة عالية النقاء تُنتَج من المياه المستخدمة باستخدام تقنيات الأغشية المتقدمة. اجتازت أكثر من 65,000 اختبار علمي يتجاوز معايير منظمة الصحة العالمية، وتُمزج بنسبة صغيرة مع مياه الخزانات للاستخدام المنزلي.</p></div>
+  <div class="info-card"><h3>🌿 أفضل الممارسات لإدارة المياه</h3><p>تركيب عدادات لجميع التوصيلات — إيقاف التوصيلات غير الشرعية — تجديد الأنابيب وإصلاحها — تركيب نظام مراقبة للتسرب — تمكين المجتمعات الحضرية للحد من فقد المياه — حملات توعية عامة.</p></div>
+  <div class="info-card"><h3>🕸️ إطار المرافق الناجح (7 محاور)</h3><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;justify-content:flex-end;"><span class="tag blue">المساءلة المؤسسية</span><span class="tag green">دمج الصرف الصحي</span><span class="tag teal">الاستدامة المالية</span><span class="tag amber">تمكين الفقراء</span><span class="tag blue">الحد من الفاقد</span><span class="tag green">إنتاجية الموظفين</span><span class="tag teal">الرؤية التعاونية</span></div></div>
+  <div class="info-card" style="border-right: 3px solid var(--green-mid);"><h3>🎯 نواتج التعلم التدريجية</h3><p><strong style="color:var(--blue)">المستوى الأول – المعرفة:</strong> التعرف على موارد المياه في الإمارات واستخداماتها.<br><br><strong style="color:var(--green)">المستوى الثاني – التحليل:</strong> تحليل تحديات الأمن المائي في الإمارات.<br><br><strong style="color:var(--teal)">المستوى الثالث – الابتكار:</strong> تصميم حلول مائية ذكية ومستدامة.</p></div>
+  <div class="nav-bar"><button class="btn primary" onclick="goto('home')">🏠 العودة للرئيسية</button></div>
+</div>
+
+<!-- صفحة التحدي -->
+<div id="page-challenge" class="page">
+  <div id="challenge-intro">
+    <div class="gradient-header">
+      <div class="avatar-row">
+        <div class="avatar">🧑‍🎓</div>
+        <div style="text-align:right;"><div class="welcome-name">التحدي الذكي للمياه</div><div class="welcome-text">15 سؤالاً تكيفياً • اكسب نقاط XP وشارات</div></div>
+      </div>
+    </div>
+    <div class="info-card">
+      <h3 style="margin-bottom:12px;">👤 أدخل بياناتك</h3>
+      <input type="text" id="student-name" placeholder="اسمك الكامل (مطلوب)" />
+      <div style="margin-bottom:8px;font-size:12px;color:var(--muted);">اختر صورتك الرمزية:</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;justify-content:flex-end;">
+        <span class="avatar-opt" data-av="🦅" onclick="selectAv(this)">🦅</span>
+        <span class="avatar-opt" data-av="🌊" onclick="selectAv(this)">🌊</span>
+        <span class="avatar-opt" data-av="🌿" onclick="selectAv(this)">🌿</span>
+        <span class="avatar-opt" data-av="⚡" onclick="selectAv(this)">⚡</span>
+        <span class="avatar-opt" data-av="🔬" onclick="selectAv(this)">🔬</span>
+        <span class="avatar-opt" data-av="🏙️" onclick="selectAv(this)">🏙️</span>
+      </div>
+      <button class="btn primary" style="width:100%;" onclick="startChallenge()">🚀 ابدأ التحدي</button>
+    </div>
+    <div class="nav-bar"><button class="btn" onclick="goto('home')">🏠 العودة للرئيسية</button></div>
+  </div>
+  <div id="challenge-quiz" style="display:none;">
+    <div style="padding:12px 0 0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-direction:row-reverse;">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;" id="q-counter">السؤال 1 من 15</div>
+        <div class="xp-badge">⭐ <span id="xp-display">0</span> نقطة</div>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="q-progress" style="width:7%;"></div></div>
+      <div id="q-badges" style="margin:8px 0;min-height:26px;text-align:right;"></div>
+    </div>
+    <div class="question-card">
+      <div class="q-type" id="q-type-label">اختيار من متعدد</div>
+      <div class="q-text" id="q-text"></div>
+      <div id="q-options"></div>
+      <textarea id="q-open" style="display:none;" placeholder="اكتب إجابتك الابتكارية هنا..."></textarea>
+      <div id="q-feedback" style="display:none;" class="feedback-box"></div>
+      <button id="q-next-btn" class="btn primary" style="width:100%;margin-top:12px;display:none;" onclick="nextQuestion()">السؤال التالي ←</button>
+    </div>
+    <div class="nav-bar"><button class="btn" onclick="if(confirm('هل تريد الخروج من التحدي؟')) { goto(\'home\'); resetChallenge(); }">🏠 الرئيسية</button></div>
+  </div>
+  <div id="challenge-done" style="display:none;">
+    <div class="done-section">
+      <div style="font-size:64px;margin-bottom:14px;">🎉</div>
+      <div style="font-size:22px;font-weight:700;color:var(--blue);margin-bottom:8px;">تم تسليم التحدي بنجاح!</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6;">ستقوم المعلمة ريهام بمراجعة أداءك ومشاركة التغذية الراجعة التفصيلية قريباً.</div>
+      <div id="earned-badges" style="margin-bottom:20px;"></div>
+      <div class="info-card" style="text-align:right;"><h3>إنجازاتك في هذه الجلسة:</h3><p id="done-summary" style="margin-top:8px;font-size:13px;color:var(--muted);line-height:1.7;"></p></div>
+      <button class="btn primary" style="width:100%;margin-top:14px;" onclick="goto('home');resetChallenge();">🏠 العودة للرئيسية</button>
+    </div>
+  </div>
+</div>
+
+<!-- صفحة التقدم -->
+<div id="page-progress" class="page">
+  <div class="gradient-header">
+    <div class="avatar-row">
+      <div class="avatar">📊</div>
+      <div style="text-align:right;"><div class="welcome-name">تقدمي</div><div class="welcome-text">متابعة المهارات والأداء</div></div>
+    </div>
+  </div>
+  <div class="info-card">
+    <h3>👤 أدخل اسمك لعرض تقدمك</h3>
+    <input type="text" id="progress-name" placeholder="اسمك الكامل" />
+    <button class="btn primary" style="width:100%;" onclick="showProgress()">عرض تقدمي 📊</button>
+  </div>
+  <div id="progress-content" style="display:none;">
+    <div class="info-card">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-direction:row-reverse;">
+        <div style="font-size:32px;" id="prog-avatar">🦅</div>
+        <div style="text-align:right;"><div style="font-weight:700;font-size:15px;" id="prog-name-display"></div><span class="level-badge" id="prog-level-badge"></span></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:5px;">نسبة الإتمام</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-comp-bar" style="width:0%;"></div></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px;font-weight:600;" id="prog-comp-text">0%</div>
+    </div>
+    <div class="info-card">
+      <h3 style="margin-bottom:14px;">المهارات المكتسبة</h3>
+      <div class="skill-row"><div style="font-size:11px;color:var(--blue);width:35px;text-align:left;font-weight:600;" id="skill-1-txt">0%</div><div class="skill-bar"><div class="progress-bar-wrap"><div class="progress-bar-fill" id="skill-1" style="width:0%;"></div></div></div><div class="skill-label">الفهم والمعرفة</div></div>
+      <div class="skill-row"><div style="font-size:11px;color:var(--blue);width:35px;text-align:left;font-weight:600;" id="skill-2-txt">0%</div><div class="skill-bar"><div class="progress-bar-wrap"><div class="progress-bar-fill" id="skill-2" style="width:0%;"></div></div></div><div class="skill-label">التحليل والنقد</div></div>
+      <div class="skill-row"><div style="font-size:11px;color:var(--blue);width:35px;text-align:left;font-weight:600;" id="skill-3-txt">0%</div><div class="skill-bar"><div class="progress-bar-wrap"><div class="progress-bar-fill" id="skill-3" style="width:0%;"></div></div></div><div class="skill-label">الابتكار والإبداع</div></div>
+    </div>
+    <div class="info-card" id="prog-feedback-box" style="display:none;"><h3>📝 تغذية راجعة من المعلمة ريهام</h3><p id="prog-feedback-text" style="margin-top:8px;font-size:13px;line-height:1.7;"></p></div>
+    <div class="info-card" id="prog-no-feedback"><p style="font-size:12px;color:var(--muted);">لا توجد تغذية راجعة بعد. أكمل التحدي أولاً، وستتواصل معك المعلمة ريهام قريباً!</p></div>
+  </div>
+  <div class="nav-bar"><button class="btn primary" onclick="goto('home')">🏠 العودة للرئيسية</button></div>
+</div>
+
+<!-- صفحة المعلم -->
+<div id="page-teacher" class="page">
+  <div id="teacher-login">
+    <div class="gradient-header">
+      <div class="avatar-row">
+        <div class="avatar">👨‍🏫</div>
+        <div style="text-align:right;"><div class="welcome-name">مركز تحكم المعلم</div><div class="welcome-text">يتطلب وصولاً آمناً</div></div>
+      </div>
+    </div>
+    <div class="info-card">
+      <h3 style="margin-bottom:14px;">🔐 تسجيل دخول المعلم</h3>
+      <input type="password" id="teacher-pw" placeholder="أدخل كلمة المرور" onkeydown="if(event.key==='Enter') teacherLogin()" />
+      <div class="pw-hint">محمي بكلمة مرور — للمعلمين فقط</div>
+      <button class="btn primary" style="width:100%;" onclick="teacherLogin()">تسجيل الدخول 🔓</button>
+    </div>
+    <div class="nav-bar"><button class="btn" onclick="goto('home')">🏠 العودة للرئيسية</button></div>
+  </div>
+  <div id="teacher-panel" style="display:none;">
+    <div class="gradient-header">
+      <div class="avatar-row">
+        <div class="avatar">👨‍🏫</div>
+        <div style="text-align:right;"><div class="welcome-name">المعلمة ريهام سامي</div><div class="welcome-text">إدارة الفصل الدراسي المباشر</div></div>
+      </div>
+    </div>
+    <div class="analytics-grid">
+      <div class="analytics-card"><div class="analytics-num" id="t-total">0</div><div class="analytics-label">الطلاب المشاركون</div></div>
+      <div class="analytics-card"><div class="analytics-num" id="t-avg">—</div><div class="analytics-label">متوسط الإتمام</div></div>
+    </div>
+    <div class="info-card" style="background:linear-gradient(135deg,#e6f4ff,#eaf7ee);border:1px solid var(--blue-mid);">
+      <h3>🤖 ملخص الذكاء الاصطناعي للفصل</h3>
+      <p id="ai-summary" style="margin-top:6px;font-size:12px;line-height:1.7;color:var(--muted);">لا توجد إجابات بعد. بمجرد إكمال الطلاب التحدي ستظهر هنا نظرة عامة على أداء الفصل.</p>
+    </div>
+    <div class="section-title" style="margin-top:12px;"><span>📋</span> إجابات الطلاب</div>
+    <div class="table-wrap"><table><thead><tr><th>الطالب</th><th>المستوى</th><th>%</th><th>التغذية الراجعة</th><th>إجراء</th></tr></thead><tbody id="student-tbody"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">لا يوجد طلاب بعد</td></tr></tbody></table></div>
+    <div class="info-card" style="margin-top:12px;">
+      <h3 style="margin-bottom:12px;">📤 أدوات الفصل الدراسي</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+        <button class="btn" onclick="exportData()">📥 تصدير التقرير</button>
+        <button class="btn danger" onclick="clearAll()">🗑️ مسح الكل</button>
+        <button class="btn" onclick="teacherLogout()">🔒 تسجيل الخروج</button>
+      </div>
+    </div>
+    <div class="nav-bar"><button class="btn primary" onclick="goto('home')">🏠 العودة للرئيسية</button></div>
+  </div>
+</div>
+
+<!-- صفحة الابتكار -->
+<div id="page-innovation" class="page">
+  <div class="gradient-header">
+    <div class="avatar-row">
+      <div class="avatar">🚀</div>
+      <div style="text-align:right;"><div class="welcome-name">مختبر الابتكار</div><div class="welcome-text">صمّم مستقبل المياه في الإمارات</div></div>
+    </div>
+  </div>
+  <div class="innovate-card" onclick="openInnovation('city')"><h3>🏙️ صمّم مدينة إماراتية ذكية للمياه</h3><p>أنشئ رؤيتك لبيئة حضرية متكاملة ومستدامة للمياه</p></div>
+  <div class="innovate-card" onclick="openInnovation('campaign')" style="background:linear-gradient(135deg,#0f6e56,#1a7a5e);"><h3>📢 حملة توعوية لترشيد المياه</h3><p>صمّم مشروعاً توعوياً صغيراً لمدرستك أو مجتمعك</p></div>
+  <div class="innovate-card" onclick="openInnovation('research')" style="background:linear-gradient(135deg,#1a4b8c,#185fa5);"><h3>🔬 بحث في ابتكارات المياه الإماراتية</h3><p>ابحث عن مثال حقيقي لتقنية مياه مبتكرة في الإمارات</p></div>
+  <div class="innovate-card" onclick="openInnovation('draw')" style="background:linear-gradient(135deg,#4a3300,#7a5a1a);"><h3>🎨 ارسم مدينة المياه الذكية المستقبلية</h3><p>ارسم وصف مفهومك الإبداعي لمدينة المياه الذكية</p></div>
+  <div id="innovation-form" style="display:none;" class="info-card">
+    <h3 id="innov-title" style="margin-bottom:12px;"></h3>
+    <input type="text" id="innov-name" placeholder="اسمك الكامل" />
+    <textarea id="innov-response" placeholder="شارك فكرتك أو تصميمك أو بحثك هنا بالتفصيل..."></textarea>
+    <button class="btn primary" style="width:100%;" onclick="submitInnovation()">إرسال الابتكار 🚀</button>
+    <button class="btn" style="width:100%;margin-top:8px;" onclick="document.getElementById('innovation-form').style.display='none'">إلغاء</button>
+  </div>
+  <div class="nav-bar"><button class="btn primary" onclick="goto('home')">🏠 العودة للرئيسية</button></div>
+</div>
+
+<!-- صفحة اسأل المعلمة -->
+<div id="page-ask" class="page">
+  <div class="gradient-header">
+    <div class="avatar-row">
+      <div class="avatar">💬</div>
+      <div style="text-align:right;"><div class="welcome-name">اسأل المعلمة ريهام</div><div class="welcome-text">مكتب المساعدة الذكي بالذكاء الاصطناعي</div></div>
+    </div>
+  </div>
+  <div class="info-card">
+    <div class="chat-area" id="chat-area">
+      <div class="chat-msg teacher"><div><span class="avatar-sm">👩‍🏫</span><span class="bubble">مرحباً! أنا المعلمة ريهام. اسألني أي شيء عن إدارة المياه في المناطق الحضرية بالإمارات. أنا هنا لمساعدتك على النجاح! 💧</span></div></div>
+    </div>
+    <input type="text" id="chat-input" placeholder="اكتب سؤالك هنا..." onkeydown="if(event.key==='Enter') sendChat()" />
+    <div style="display:flex;gap:8px;flex-direction:row-reverse;">
+      <button class="btn primary" style="flex:1;" onclick="sendChat()">إرسال 💬</button>
+      <button class="btn" onclick="requestHelp()">📎 إرسال فكرة</button>
+    </div>
+  </div>
+  <div class="info-card" style="margin-top:10px;">
+    <h3 style="margin-bottom:10px;">💡 أسئلة سريعة</h3>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <button class="btn" style="text-align:right;" onclick="quickQ('ما هي مياه NEWater ولماذا تعتبر مهمة؟')">ما هي مياه NEWater؟</button>
+      <button class="btn" style="text-align:right;" onclick="quickQ('لماذا تُعدّ تحلية المياه مهمة في الإمارات؟')">لماذا تُعدّ تحلية المياه مهمة؟</button>
+      <button class="btn" style="text-align:right;" onclick="quickQ('ما هي المجالات الخمسة الرئيسية لتحديات المياه؟')">المجالات الخمسة لتحديات المياه؟</button>
+      <button class="btn" style="text-align:right;" onclick="quickQ('كيف أصمم مدينة ذكية للمياه؟')">كيف أصمم مدينة ذكية للمياه؟</button>
+    </div>
+  </div>
+  <div class="nav-bar"><button class="btn primary" onclick="goto('home')">🏠 العودة للرئيسية</button></div>
+</div>
+
+</div>
+
+<script>
+var chosenAv='🦅',currentQ=0,xp=0,answers=[],currentStudent=null;
+var studentData=JSON.parse(localStorage.getItem('uae_water_ar')||'[]');
+
+var AI_R={
+  newater:'مياه NEWater هي مياه معاد تدويرها بدرجة عالية من النقاء باستخدام تقنيات الأغشية المتقدمة. اجتازت أكثر من 65,000 اختبار علمي وتتجاوز معايير منظمة الصحة العالمية. تستخدمها سنغافورة بخلطها بنسبة صغيرة مع مياه الخزانات للاستخدام المنزلي.',
+  desal:'تحلية المياه تُزيل الملوحة من مياه البحر لإنتاج مياه عذبة. في الإمارات، تُعدّ ضرورة حيوية لشحّ المياه العذبة الطبيعية. أُنشئت أول محطة تحلية في سنغافورة عام 2005 وتُغطي 10% من احتياجات المياه الوطنية.',
+  challenges:'المجالات الخمسة الرئيسية هي:\n① توافر الموارد — سوء الإدارة لا الشح\n② الوصول — التوصيل المتكافئ لجميع المنازل\n③ القدرات — القدرة على تحمل تكاليف التوصيل\n④ الجودة — تدهور نوعية المياه\n⑤ الاستخدام — فقدان المياه أثناء التوزيع',
+  smart:'تدمج مدينة المياه الذكية شبكات الاستشعار والمراقبة بالذكاء الاصطناعي وأنظمة كشف التسرب وبنية تحتية لإعادة تدوير المياه وعدادات ذكية وحملات توعية مجتمعية. يمكنك اقتراح إدارة الضغط المنطقي وحصاد مياه الأمطار كابتكارات رئيسية!',
+  def:'سؤال رائع! تُركّز إدارة المياه الحضرية في الإمارات على حلول مستدامة — التحلية، وإعادة تدوير NEWater، والعدادات الذكية، والمشاركة المجتمعية. هل يمكنك توضيح سؤالك أكثر لأتمكن من تقديم إجابة مفصّلة؟'
+};
+
+var QS=[
+  {type:'اختيار من متعدد',text:'أيٌّ من التالي يُعدّ تحدياً مائياً رئيسياً في المناطق الحضرية؟',opts:['وفرة الأمطار الغزيرة','سوء إدارة الموارد المائية وضعف كفاءتها','كثرة الأنهار في المدن','انخفاض عدد السكان'],c:1,xp:10,fb:['ليس صحيحاً — الإمارات لديها أمطار شحيحة!','تحليل ممتاز! سوء الإدارة هو المشكلة الجوهرية. 🌟','لا توجد أنهار تقريباً في الإمارات.','حاول مرة أخرى!']},
+  {type:'اختيار من متعدد',text:'ماذا تعني مياه NEWater في استراتيجية سنغافورة المائية؟',opts:['مياه طبيعية جديدة','مياه معالجة عالية النقاء معاد تدويرها','مياه مستوردة من الشمال','مياه الطوارئ الوطنية'],c:1,xp:10,fb:['ليس صحيحاً!','إجابة ممتازة! NEWater مياه معاد تدويرها عالية النقاء. ✅','لا — فكّر في إعادة التدوير!','فكرة قريبة لكن غير دقيقة!']},
+  {type:'اختيار من متعدد',text:'أيٌّ من المصادر التالية ليس ضمن استراتيجية سنغافورة لمواجهة شحّ المياه؟',opts:['تجميع مياه الأمطار المحلية','استيراد المياه','مياه NEWater المعالجة','استخراج المياه من الكهوف الجوفية'],c:3,xp:10,fb:['تجميع مياه الأمطار مصدر أساسي!','الاستيراد أحد المصادر الأربعة.','NEWater محور استراتيجيتهم.','ممتاز! سنغافورة تعتمد على 4 مصادر — الكهوف ليست منها. 🎯']},
+  {type:'اختيار من متعدد',text:'ما الهدف الرئيسي من تزويد جميع التوصيلات المائية بعدادات؟',opts:['للزينة فقط','تتبع الاستهلاك والحد من الفاقد المائي','زيادة ضغط الماء','تبريد الأنابيب'],c:1,xp:10,fb:['فكّر بطريقة عملية!','رائع! تركيب العدادات أولى خطوات الحد من المياه غير المُدرّة. 🌟','العدادات تقيس الاستهلاك لا الضغط.','تخمين مثير لكنه غير صحيح!']},
+  {type:'اختيار من متعدد',text:'كم بلغت نسبة المياه المفقودة في بنوم بنه بعد تطبيق برنامج الإصلاح حتى عام 2009؟',opts:['50%','30%','6.15%','20%'],c:2,xp:10,fb:['ليس صحيحاً!','أقل من ذلك!','رائع! من 72% إلى 6.15% فقط — إنجاز استثنائي! 🏆','أقل بكثير!']},
+  {type:'تحديد',text:'حدّد نوع المياه: مياه تجتاز أكثر من 65,000 اختبار علمي وتتجاوز معايير منظمة الصحة العالمية.',opts:['مياه الأمطار','المياه الجوفية','NEWater (معالجة معاد تدويرها)','مياه مستوردة'],c:2,xp:12,fb:['مياه الأمطار لا تخضع لهذا الاختبار.','المياه الجوفية مختلفة!','صحيح تماماً! هذه هي NEWater — المياه فائقة النقاء. ✅','المياه المستوردة لا تعالَج بهذه الطريقة.']},
+  {type:'تحديد',text:'حدّد التحدي: "المياه المخصصة للاستخدام المنزلي غير كافية نتيجة الخسارة في عملية التوزيع."',opts:['الجودة','الاستخدام','الوصول','القدرات'],c:1,xp:12,fb:['الجودة تتعلق بالتلوث لا الفاقد.','إجابة دقيقة! تحدي الاستخدام — يُفقد الماء قبل وصوله للمنازل. 🎯','الوصول يتعلق بالتوصيل بالأنابيب.','القدرات تتعلق بالقدرة الشرائية.']},
+  {type:'تحديد',text:'أيٌّ من الإجراءات يُعالج مباشرةً فاقد المياه غير المُدرّة للإيراد (NRW)؟',opts:['بناء سدود جديدة','إيقاف التوصيلات غير الشرعية وتجديد الأنابيب','استيراد مزيد من المياه','رفع أسعار المياه فقط'],c:1,xp:12,fb:['السدود تزيد الإمداد لا تقلل الفاقد.','ممتاز! هذان الإجراءان يعالجان الفاقد مباشرة. ✅','الاستيراد يزيد الإمداد لا يحل الكفاءة.','السعر وحده لا يصلح البنية التحتية.']},
+  {type:'شرح',text:'لماذا تعتبر تحلية المياه ضرورة حيوية للإمارات رغم تكلفتها العالية؟',opts:['لأنها رخيصة وسهلة','لأنها تحوّل مياه البحر لمياه عذبة وتحل أزمة الشح','لأنها تلوّث البيئة كثيراً','لأنها تعمل فقط في المناطق الباردة'],c:1,xp:15,fb:['التحلية في الواقع مكلفة جداً من حيث الطاقة.','استنتاج ممتاز! رغم التكاليف، التحلية هي الحل الأساسي للشح. 🌟','التحلية الحديثة لها ضمانات بيئية.','التحلية تعمل في المناطق الحارة كالإمارات.']},
+  {type:'شرح',text:'لماذا لا يزال الوصول للمياه تحدياً في الدول النامية رغم وجود البنية التحتية في المدن؟',opts:['الناس يفضلون الأنهار','معدلات التوصيل المنزلي بالأنابيب لا تزال منخفضة','المياه باردة جداً','الأنابيب تعمل في المدن فقط'],c:1,xp:15,fb:['ليست هذه المشكلة!','تحليل دقيق! حتى مع البنية التحتية، التوصيلات المنزلية تظل محدودة. 🎯','درجة الحرارة غير ذات صلة.','البنية موجودة — الفجوة في التوصيل بالمنازل.']},
+  {type:'مقارنة',text:'قارن بين المياه الجوفية والمياه المحلاة: أيهما أكثر موثوقية لمدينة إماراتية متنامية؟',opts:['المياه الجوفية — إمداد لا محدود','المياه المحلاة — تُنتَج باستمرار من البحر','هما متساويتان تماماً','المياه الجوفية دائماً أنظف'],c:1,xp:15,fb:['المياه الجوفية تتناقص بسرعة!','مقارنة رائعة! التحلية توفر إمداداً قابلاً للتوسع. 🏆','يختلفان كثيراً في الموثوقية.','المياه الجوفية قد تكون ملوثة أيضاً.']},
+  {type:'مقارنة',text:'قارن تحدي "القدرات" مع تحدي "الجودة": ما الفرق الجوهري بينهما؟',opts:['هما نفس الشيء','القدرات = القدرة المالية؛ الجودة = حالة المياه','الجودة = التكلفة؛ القدرات = اللون','لا يؤثران على إدارة المياه الحضرية'],c:1,xp:15,fb:['هما تحديان متمايزان!','تحليل مثالي! القدرات للتحمل المالي؛ الجودة لحالة المياه. ✅','لقد عكست التعريفين!','كلاهما يؤثران بشكل كبير على الوصول للمياه.']},
+  {type:'حل مشكلة',text:'مدينة إماراتية تفقد 40% من مياهها عبر أنابيب قديمة. ما الخطوة الأولى الأكثر فاعلية؟',opts:['بناء سد جديد','تركيب نظام مراقبة للتسرب وإصلاح الأنابيب فوراً','مطالبة السكان بتقليل استهلاكهم','استيراد مزيد من المياه للتعويض'],c:1,xp:18,fb:['السد يزيد الإمداد لا يعالج الفاقد.','حل ذكي! معالجة البنية التحتية من المصدر هي الأكثر كفاءة. 🌟','الترشيد مهم لكن 40% فاقد يحتاج تدخلاً فورياً في البنية.','الاستيراد يعوّض لا يحل السبب الجذري.']},
+  {type:'حل مشكلة',text:'فقراء المناطق الحضرية لا يستطيعون تحمّل تكاليف توصيل المياه. أيٌّ من الحلول أكثر استدامة؟',opts:['تجاهلهم والتركيز على المناطق الغنية','برامج حوافز وتوصيلات مدعومة مع مراقبة الاستخدام','قطع خدماتهم','الاكتفاء بتوفير شاحنات المياه فقط'],c:1,xp:18,fb:['هذا يتناقض مع مبدأ العدالة في الوصول!','حل مبتكر ومستدام! برامج الحوافز تُمكّن المجتمعات. 🏆','القطع يُعمّق اللامساواة.','الشاحنات حلول طارئة لا مستدامة.']},
+  {type:'ابتكار',text:'🌟 تحدي الابتكار: صمّم حلاً ذكياً واحداً للحد من هدر المياه في المدن الإماراتية. اشرح فكرتك بالتفصيل أدناه.',opts:[],c:-1,xp:20,fb:[]}
+];
+
+function goto(p){
+  document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active');});
+  var el=document.getElementById('page-'+p);
+  if(el){el.classList.add('active');window.scrollTo(0,0);}
+}
+
+function selectAv(el){
+  document.querySelectorAll('.avatar-opt').forEach(function(a){a.classList.remove('selected');});
+  el.classList.add('selected');
+  chosenAv=el.dataset.av;
+}
+
+function startChallenge(){
+  var name=document.getElementById('student-name').value.trim();
+  if(!name){alert('يرجى إدخال اسمك للمتابعة!');return;}
+  currentStudent={name:name,avatar:chosenAv,answers:[],xp:0,completed:false,feedback:'',timestamp:new Date().toISOString()};
+  currentQ=0;xp=0;answers=[];
+  document.getElementById('challenge-intro').style.display='none';
+  document.getElementById('challenge-quiz').style.display='block';
+  document.getElementById('challenge-done').style.display='none';
+  showQ();
+}
+
+function showQ(){
+  var q=QS[currentQ];
+  document.getElementById('q-counter').textContent='السؤال '+(currentQ+1)+' من 15';
+  document.getElementById('q-progress').style.width=Math.round(((currentQ+1)/15)*100)+'%';
+  document.getElementById('q-type-label').textContent=q.type;
+  document.getElementById('q-text').textContent=q.text;
+  document.getElementById('q-feedback').style.display='none';
+  document.getElementById('q-next-btn').style.display='none';
+  document.getElementById('xp-display').textContent=xp;
+  var optEl=document.getElementById('q-options');
+  var openEl=document.getElementById('q-open');
+  optEl.innerHTML='';
+  if(q.type==='ابتكار'){
+    openEl.style.display='block';openEl.value='';
+    document.getElementById('q-next-btn').style.display='block';
+    document.getElementById('q-next-btn').textContent='إرسال الابتكار ✨';
+  } else {
+    openEl.style.display='none';
+    var labels=['أ) ','ب) ','ج) ','د) '];
+    q.opts.forEach(function(opt,i){
+      var btn=document.createElement('button');
+      btn.className='option-btn';
+      btn.textContent=labels[i]+opt;
+      btn.onclick=function(){selectOpt(i,btn);};
+      optEl.appendChild(btn);
+    });
+  }
+}
+
+function selectOpt(idx,btn){
+  var q=QS[currentQ];
+  if(document.getElementById('q-feedback').style.display==='block')return;
+  document.querySelectorAll('.option-btn').forEach(function(b){b.classList.remove('selected');});
+  btn.classList.add('selected');
+  var fb=document.getElementById('q-feedback');
+  var correct=idx===q.c;
+  if(correct){xp+=q.xp;btn.classList.add('correct');}
+  else{btn.classList.add('wrong');if(q.c>=0)document.querySelectorAll('.option-btn')[q.c].classList.add('correct');}
+  fb.textContent=q.fb[idx]||(correct?'ممتاز! ✅':'حاول مرة أخرى!');
+  fb.className='feedback-box '+(correct?'correct':'wrong');
+  fb.style.display='block';
+  document.getElementById('q-next-btn').style.display='block';
+  document.getElementById('q-next-btn').textContent=currentQ<14?'السؤال التالي ←':'إنهاء التحدي 🎉';
+  answers.push({q:currentQ,selected:idx,correct:correct});
+  updateBadges();
+}
+
+function nextQuestion(){
+  var q=QS[currentQ];
+  if(q.type==='ابتكار'){
+    var resp=document.getElementById('q-open').value.trim();
+    if(!resp){alert('يرجى كتابة فكرتك الابتكارية!');return;}
+    xp+=q.xp;
+    answers.push({q:currentQ,selected:-1,correct:true,response:resp});
+    updateBadges();
+  }
+  currentQ++;
+  if(currentQ>=15){finishChallenge();return;}
+  showQ();
+}
+
+function updateBadges(){
+  var el=document.getElementById('q-badges');
+  var h='';
+  if(xp>=30)h+='<span class="tag blue">💧 خبير المياه</span> ';
+  if(xp>=70)h+='<span class="tag green">🌿 مفكر الاستدامة</span> ';
+  if(xp>=110)h+='<span class="tag teal">🔬 عقل مبتكر</span> ';
+  el.innerHTML=h;
+}
+
+function finishChallenge(){
+  document.getElementById('challenge-quiz').style.display='none';
+  document.getElementById('challenge-done').style.display='block';
+  var correct=answers.filter(function(a){return a.correct;}).length;
+  var pct=Math.round((correct/15)*100);
+  var level=pct>=80?'outstanding':pct>=60?'good':'developing';
+  var levelAr=pct>=80?'متميز':pct>=60?'جيد':'في طور التطور';
+  currentStudent.answers=answers;currentStudent.xp=xp;currentStudent.completed=true;
+  currentStudent.completion=pct;currentStudent.level=level;currentStudent.levelAr=levelAr;
+  var idx=studentData.findIndex(function(s){return s.name===currentStudent.name;});
+  if(idx>=0)studentData[idx]=currentStudent;else studentData.push(currentStudent);
+  localStorage.setItem('uae_water_ar',JSON.stringify(studentData));
+  var badges='';
+  if(xp>=30)badges+='<span class="tag blue">💧 خبير المياه</span> ';
+  if(xp>=70)badges+='<span class="tag green">🌿 مفكر الاستدامة</span> ';
+  if(xp>=110)badges+='<span class="tag teal">🔬 عقل مبتكر</span> ';
+  document.getElementById('earned-badges').innerHTML=badges||'<span class="tag amber">🌱 مستكشف مبتدئ</span>';
+  document.getElementById('done-summary').textContent='لقد حصلت على '+xp+' نقطة XP وأتممت جميع الأسئلة الـ 15 بنجاح. ستراجع المعلمة ريهام أداءك وتشاركك التغذية الراجعة التفصيلية قريباً.';
+}
+
+function resetChallenge(){
+  currentQ=0;xp=0;answers=[];currentStudent=null;
+  document.getElementById('challenge-intro').style.display='block';
+  document.getElementById('challenge-quiz').style.display='none';
+  document.getElementById('challenge-done').style.display='none';
+  document.getElementById('student-name').value='';
+}
+
+function showProgress(){
+  var name=document.getElementById('progress-name').value.trim();
+  if(!name){alert('يرجى إدخال اسمك');return;}
+  var s=studentData.find(function(x){return x.name.toLowerCase()===name.toLowerCase();});
+  document.getElementById('progress-content').style.display='block';
+  document.getElementById('prog-name-display').textContent=name;
+  if(s&&s.completed){
+    var pct=s.completion||0;
+    document.getElementById('prog-avatar').textContent=s.avatar||'🦅';
+    document.getElementById('prog-comp-bar').style.width=pct+'%';
+    document.getElementById('prog-comp-text').textContent=pct+'% مكتمل';
+    var lb=document.getElementById('prog-level-badge');
+    lb.textContent=s.levelAr||'في طور التطور';
+    lb.className='level-badge '+(s.level||'developing');
+    var s1=Math.min(pct+5,100),s2=Math.max(pct-10,0),s3=Math.max(pct-20,0);
+    document.getElementById('skill-1').style.width=s1+'%';document.getElementById('skill-1-txt').textContent=s1+'%';
+    document.getElementById('skill-2').style.width=s2+'%';document.getElementById('skill-2-txt').textContent=s2+'%';
+    document.getElementById('skill-3').style.width=s3+'%';document.getElementById('skill-3-txt').textContent=s3+'%';
+    if(s.feedback&&s.releaseResult){
+      document.getElementById('prog-feedback-box').style.display='block';
+      document.getElementById('prog-feedback-text').textContent=s.feedback;
+      document.getElementById('prog-no-feedback').style.display='none';
+    } else {
+      document.getElementById('prog-feedback-box').style.display='none';
+      document.getElementById('prog-no-feedback').style.display='block';
+    }
+  } else {
+    document.getElementById('prog-comp-bar').style.width='0%';
+    document.getElementById('prog-comp-text').textContent='لم يتم العثور على بيانات. أكمل التحدي الذكي أولاً!';
+    document.getElementById('prog-level-badge').textContent='—';
+    document.getElementById('prog-feedback-box').style.display='none';
+  }
+}
+
+function teacherLogin(){
+  if(document.getElementById('teacher-pw').value==='1985'){
+    document.getElementById('teacher-login').style.display='none';
+    document.getElementById('teacher-panel').style.display='block';
+    loadTeacherPanel();
+  } else {
+    alert('كلمة المرور غير صحيحة. حاول مرة أخرى.');
+    document.getElementById('teacher-pw').value='';
+  }
+}
+
+function teacherLogout(){
+  document.getElementById('teacher-login').style.display='block';
+  document.getElementById('teacher-panel').style.display='none';
+  document.getElementById('teacher-pw').value='';
+}
+
+function loadTeacherPanel(){
+  studentData=JSON.parse(localStorage.getItem('uae_water_ar')||'[]');
+  var done=studentData.filter(function(s){return s.completed;});
+  document.getElementById('t-total').textContent=done.length;
+  if(done.length>0){
+    var avg=Math.round(done.reduce(function(s,c){return s+(c.completion||0);},0)/done.length);
+    document.getElementById('t-avg').textContent=avg+'%';
+    var out=done.filter(function(s){return s.level==='outstanding';}).length;
+    var good=done.filter(function(s){return s.level==='good';}).length;
+    var dev=done.filter(function(s){return s.level==='developing';}).length;
+    document.getElementById('ai-summary').textContent='نظرة عامة على الفصل: أكمل '+done.length+' طالب/طالبة التحدي. متوسط الإتمام: '+avg+'%. المتميزون: '+out+'، الجيدون: '+good+'، في طور التطور: '+dev+'. المجالات التي تحتاج متابعة: جودة المياه ومهام التصميم الابتكاري.';
+  }
+  var tbody=document.getElementById('student-tbody');
+  if(done.length===0){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#666;padding:20px;">لا يوجد طلاب بعد</td></tr>';return;}
+  tbody.innerHTML=done.map(function(s,i){
+    return '<tr><td>'+(s.avatar||'🦅')+' '+s.name+'</td><td><span class="level-badge '+(s.level||'developing')+'">'+(s.levelAr||'—')+'</span></td><td>'+(s.completion||0)+'%</td><td><input type="text" value="'+(s.feedback||'')+'" onchange="updateFeedback('+i+',this.value)" style="width:110px;margin:0;font-size:11px;padding:3px 6px;" placeholder="أضف تغذية راجعة..." /></td><td><button class="btn" style="font-size:10px;padding:4px 8px;" onclick="releaseResult('+i+')">'+(s.releaseResult?'✅ مُفعَّل':'📤 إصدار')+'</button></td></tr>';
+  }).join('');
+}
+
+function updateFeedback(idx,val){
+  var done=studentData.filter(function(s){return s.completed;});
+  var mi=studentData.findIndex(function(s){return s.name===done[idx].name;});
+  if(mi>=0){studentData[mi].feedback=val;localStorage.setItem('uae_water_ar',JSON.stringify(studentData));}
+}
+
+function releaseResult(idx){
+  var done=studentData.filter(function(s){return s.completed;});
+  var mi=studentData.findIndex(function(s){return s.name===done[idx].name;});
+  if(mi>=0){studentData[mi].releaseResult=!studentData[mi].releaseResult;localStorage.setItem('uae_water_ar',JSON.stringify(studentData));loadTeacherPanel();}
+}
+
+function clearAll(){
+  if(confirm('هل أنت متأكد من مسح جميع بيانات الطلاب؟ لا يمكن التراجع عن هذا الإجراء.')){
+    localStorage.removeItem('uae_water_ar');studentData=[];loadTeacherPanel();
+  }
+}
+
+function exportData(){
+  var data=JSON.parse(localStorage.getItem('uae_water_ar')||'[]');
+  var csv='\uFEFFالاسم,المستوى,الإتمام,النقاط XP,التغذية الراجعة\n'+
+    data.filter(function(s){return s.completed;}).map(function(s){return '"'+s.name+'","'+(s.levelAr||'')+'","'+(s.completion||0)+'%","'+s.xp+'","'+(s.feedback||'')+'"';}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='تقرير_التحدي_المائي_الإمارات.csv';a.click();
+}
+
+function openInnovation(type){
+  var titles={city:'🏙️ تصميم مدينة ذكية للمياه',campaign:'📢 حملة ترشيد المياه',research:'🔬 بحث ابتكارات المياه الإماراتية',draw:'🎨 مفهوم مدينة المياه المستقبلية'};
+  document.getElementById('innov-title').textContent=titles[type];
+  document.getElementById('innovation-form').style.display='block';
+  document.getElementById('innov-response').value='';
+  document.getElementById('innov-name').value='';
+  document.getElementById('innovation-form').scrollIntoView({behavior:'smooth'});
+}
+
+function submitInnovation(){
+  if(!document.getElementById('innov-name').value.trim()||!document.getElementById('innov-response').value.trim()){alert('يرجى ملء جميع الحقول!');return;}
+  alert('تم إرسال ابتكارك بنجاح! 🚀\nستراجع المعلمة ريهام فكرتك. استمر في التفكير الإبداعي!');
+  document.getElementById('innovation-form').style.display='none';
+}
+
+function sendChat(){
+  var input=document.getElementById('chat-input');
+  var msg=input.value.trim();
+  if(!msg)return;
+  addChat('student',msg);input.value='';
+  setTimeout(function(){
+    var l=msg;
+    var r=AI_R.def;
+    if(l.includes('NEWater')||l.includes('نيووتر')||l.includes('معاد')||l.includes('تدوير'))r=AI_R.newater;
+    else if(l.includes('تحلية')||l.includes('desal'))r=AI_R.desal;
+    else if(l.includes('تحدي')||l.includes('خمسة')||l.includes('مجالات')||l.includes('مجال'))r=AI_R.challenges;
+    else if(l.includes('ذكية')||l.includes('ابتكار')||l.includes('تصميم')||l.includes('مدينة'))r=AI_R.smart;
+    addChat('teacher',r);
+  },700);
+}
+
+function quickQ(q){document.getElementById('chat-input').value=q;sendChat();}
+
+function requestHelp(){
+  addChat('student','📎 [تم إرسال فكرة مشروع للمعلمة ريهام للمراجعة]');
+  setTimeout(function(){addChat('teacher','شكراً لمشاركة فكرتك! سأراجعها وأقدم لك تغذية راجعة تفصيلية. استمر في التفكير الإبداعي! 🌟');},600);
+}
+
+function addChat(role,text){
+  var area=document.getElementById('chat-area');
+  var div=document.createElement('div');
+  div.className='chat-msg '+role;
+  div.innerHTML='<div>'+(role==='teacher'?'<span class="avatar-sm">👩‍🏫</span>':'')+' <span class="bubble">'+text+'</span></div>';
+  area.appendChild(div);
+  area.scrollTop=area.scrollHeight;
+}
+</script>
+</body>
+</html>
